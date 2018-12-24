@@ -413,6 +413,78 @@ if(tokens[i]=="/"){
 
 ## 2.Greedy
 
+### 402. Remove K Digits
+
+Given a non-negative integer num represented as a string, remove k digits from the number so that the new number is the smallest possible.
+
+Note:
+
+* The length of num is less than 10002 and will be ≥ k.
+* The given num does not contain any leading zero.
+
+Example 1:
+```
+Input: num = "1432219", k = 3
+Output: "1219"
+Explanation: Remove the three digits 4, 3, and 2 to form the new number 1219 which is the smallest.
+```
+Example 2:
+```
+Input: num = "10200", k = 1
+Output: "200"
+Explanation: Remove the leading 1 and the number is 200. Note that the output must not contain leading zeroes.
+```
+
+Example 3:
+```
+Input: num = "10", k = 2
+Output: "0"
+Explanation: Remove all the digits from the number and it is left with nothing which is 0.
+```
+
+思路：
+
+baseline:观察规律可知（这个很重要），要使得最后取出来的数字最小，就按序号遍历字符串，凡是遇到一个数字比他相邻后面的数字大时，就移除他，这样就基本能保证满足条件。比如
+um = "1432219", k = 3 就可以。
+
+但是还要考虑到像“222222”，“111123333”这种，这个还是按照上面的方法来，只是最后取前K个就好了。使用substr()函数
+
+代码：
+```c++
+string removeKdigits(string num, int k){
+    int len=num.size();
+    string res="";
+    string s;
+    int count=0;
+    if(len==k){
+        res+="0";
+        return res;
+    }
+    s.push_back(num[0]);
+    for(int i=1;i<len;i++){
+        //判断条件要考虑全面，细节决定成败
+        while(s.back()>num[i] && count<k && !s.empty()){
+            s.pop_back();
+            count++;
+        }
+        s.push_back(num[i]);
+    }
+
+    //判断是否有“0”开头
+    while(s[0]=='0' && !s.empty()){
+        s=s.substr(1,s.size()-1);
+    }
+
+    //这两步写法不是很严谨
+    if(s.size()==0)
+        return "0";
+
+    return s.substr(0,len-k);
+}
+
+```
+
+
 ### 406. Queue Reconstruction by Height
 
 Suppose you have a random list of people standing in a queue. Each person is described by a pair of integers (h, k), where h is the height of the person and k is the number of people in front of this person who have a height greater than or equal to h. Write an algorithm to reconstruct the queue.
