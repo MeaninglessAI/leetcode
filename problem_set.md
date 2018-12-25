@@ -2307,8 +2307,72 @@ Output: -1
 Note:
 You may assume that you have an infinite number of each kind of coin.
 
-对于求极值问题，我们还是主要考虑动态规划Dynamic Programming来做，一开始想到是否可以使用贪心，后面发现是不能保证最小coin数目的，举个例子，如果amount = 8, coins为[1, 3, 5, 6]，我们会发现，采用贪心策略得到3（6，1，1），而实际正确值为2（5，3），之所以贪心法在这里不适用是因为贪心所作的决策并不能确保全局的最优，如果换作这样的问题，提水，每桶都有一定量的水，怎样才能最少次数运完所有的水，这样肯定就是贪心选择最多的水。因为每次提越多的水，最后的次数肯定最少。coin change 其实有两种解决办法，但是思想是一样的，第一种，dp[n]为amount为n的change数目，那么我们从dp[1]开始就可以DP到dp[n]，迭代关系式为，dp[n] = min(dp[n], dp[n-coins[m]]+1). 还有一种方法是使用递归的方法，有可能会造成memory exceed，递推关系为count(n,m,coins) = min(count(n,m-1,coins), count(n-coins[m],m,coins)); 其中count表示寻找最少change的函数，n为amount，m为coins（排好序的）的下标。
+思路：
 
+对于求极值问题，我们还是主要考虑动态规划Dynamic Programming来做，一开始想到是否可以使用贪心，后面发现是不能保证最小coin数目的，举个例子，如果amount = 8, coins为[1, 3, 5, 6]，我们会发现，采用贪心策略得到3（6，1，1），而实际正确值为2（5，3），之所以贪心法在这里不适用是因为贪心所作的决策并不能确保全局的最优，如果换作这样的问题，提水，每桶都有一定量的水，怎样才能最少次数运完所有的水，这样肯定就是贪心选择最多的水。因为每次提越多的水，最后的次数肯定最少。
+
+coin change 其实有两种解决办法，但是思想是一样的，第一种，dp[n]为amount为n的change数目，那么我们从dp[1]开始就可以DP到dp[n]，迭代关系式为，dp[n] = min(dp[n], dp[n-coins[m]]+1). 
+
+另外，DP初始化的时候，也要注意。初始化dp[0] = 0，因为目标值若为0时，就不需要硬币了。其他值可以初始化为整型最大值，或者是amount+1，为啥呢，因为最小的硬币是1，所以amount最多需要amount个硬币，amount+1也就相当于整型最大值的作用了。因为这里涉及到最后返回的时候，凑不起这个数要返回-1的情况。
+
+当coins = [1, 2, 5], amount = 11时，可以看下dp数组的变换情况：
+```c++
+i=1:
+    if(1<=i) dp[1]=min(dp[0]+1,dp[1])=min(2,amount+1)=1 
+    后面就不满足了
+i=2:
+    if(1<=i) dp[2]=min(dp[1]+1,dp[2])=min(2,amount+1)=2 第一次更新
+    if(2<=i) dp[2]=min(dp[0]+1,dp[2])=min(1,2)=1
+i=3:
+    if(1<=i) dp[3]=min(dp[2]+1,dp[3])=min(2,amount+1)=2
+    if(2<=i) dp[3]=min(dp[1]+1,dp[3])=min(1+1,2)=2
+i=4:
+    if(1<=i) dp[4]=min(dp[3]+1,dp[4])=min(3,amount+1)=3
+    if(2<=i) dp[4]=min(dp[2]+1,dp[4])=min(3,3)=3
+```
+
+当coins = [2, 3, 5], amount = 9时，可以看下dp数组的变换情况：
+```c++
+i=1:
+    没有一个小于1的，所以dp[1]=amount+1
+i=2:
+    dp[2]=min(dp[0]+1,amount+1)=1
+i=3:
+    dp[3]=min(dp[2]+1,amount+1)=2
+    dp[3]=min(dp[0]+1，2)=1
+i=4:
+    dp[4]=min(dp[2]+1,amount+1)=2
+    dp[4]=min(dp[1]+1,2)=2
+i=5:
+    dp[5]=min(dp[3]+1,amount+1)=2
+    dp[5]=min(dp[2]+1,2)=2
+    dp[5]=min(dp[0]+1,2)=1
+i=6:
+    dp[6]=min(dp[4]+1,amount+1)=3
+    dp[6]=min(dp[3]+1,3)=2
+    dp[6]=min(dp[1]+1,2)=min(amount+1,2)=2
+i=7:
+    dp[7]=min(dp[5]+1,amount+1)=2
+    dp[7]=min(dp[4]+1,2)=2
+    dp[7]=min(dp[2]+1,2)=2
+
+```
+当coins = [2], amount = 3时，可以看下dp数组的变换情况：
+```c++
+i=1:
+    没有一个小于1的，所以dp[1]=amount+1
+i=2:
+    dp[2]=min(dp[0]+1，dp[2])=min(1,amount+1)=1
+i=3:
+    dp[3]=min(dp[1]+1,dp[3])=min(amount+1+1,amount+1)=amount+1 不满足
+    所以返回-1
+```
+仔细体会上述几个例子中，dp的变换情况
+
+还有一种方法是使用递归的方法，有可能会造成memory exceed，递推关系为count(n,m,coins) = min(count(n,m-1,coins), count(n-coins[m],m,coins)); 其中count表示寻找最少change的函数，n为amount，m为coins（排好序的）的下标。
+
+
+代码：
 
 ```c++
 // Non-recursion
@@ -2328,6 +2392,9 @@ public:
     }
 };
 ```
+参考：
+[[LeetCode] Coin Change 硬币找零](https://www.cnblogs.com/grandyang/p/5138186.html)
+
 
 ### 279. Perfect Squares
 
