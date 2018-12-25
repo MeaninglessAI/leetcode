@@ -2008,7 +2008,64 @@ public int maxSubArray(int[] A) {
 
 ##  Dynamic Programming 动态规划
 
+### 343. Integer Break
 
+Given a positive integer n, break it into the sum of at least two positive integers and maximize the product of those integers. Return the maximum product you can get.
+
+Example 1:
+
+```c++
+Input: 2
+Output: 1
+Explanation: 2 = 1 + 1, 1 × 1 = 1.
+
+Input: 10
+Output: 36
+Explanation: 10 = 3 + 3 + 4, 3 × 3 × 4 = 36.
+
+```
+
+Note: You may assume that n is not less than 2 and not larger than 58.
+
+思路：
+对于n来说，它可以被拆分为 n1和n2的和，而 n1和n2又可以被拆分为其他的和，最小一定是止于 n = 1,n = 2, n = 3这三者之中。
+
+时间复杂度为O(n2)
+
+状态转移方程为：
+
+dp[i]=max(dp[i-j] * dp[j], (i-j) *j,dp[i-j] * j,(i-j)*dp[j],dp[i]);
+
+代码：
+```c++
+class Solution {
+public:
+     static int max(int a, int b, int c, int d, int origin) {
+        int t1 = (a >= b)? a : b;
+        int t2 = (c >= d)? c : d;
+        int t3 =  (t1 >= t2) ? t1 : t2;
+        return t3 >= origin ? t3 : origin;
+    }
+    
+    
+    int integerBreak(int n) {
+        vector<int > dp(n+1,-1);
+        dp[2]=1;
+        dp[1]=1;
+        if(n==2)
+            return 1;
+        for(int i=3;i<=n;i++){
+            
+            for(int j=1;j<=i-1;j++){
+                dp[i]=max(dp[i-j] * dp[j], (i-j) *j,dp[i-j] * j,(i-j)*dp[j],dp[i]);
+            }
+        }
+        
+        return dp[n];
+    }
+       
+};
+```
 
 ### 152. Maximum Product Subarray
 
@@ -2367,9 +2424,11 @@ i=3:
     dp[3]=min(dp[1]+1,dp[3])=min(amount+1+1,amount+1)=amount+1 不满足
     所以返回-1
 ```
-仔细体会上述几个例子中，dp的变换情况
 
-还有一种方法是使用递归的方法，有可能会造成memory exceed，递推关系为count(n,m,coins) = min(count(n,m-1,coins), count(n-coins[m],m,coins)); 其中count表示寻找最少change的函数，n为amount，m为coins（排好序的）的下标。
+仔细体会上述几个例子中，dp数组的变换情况
+
+
+还有一种方法是使用递归的方法，有可能会造成memory exceed，递推关系为count(n,m,coins) = min(count(n,m-1,coins), count(n-coins[m],m,coins)); 其中count表示寻找最少change的函数,n为amount，m为coins（排好序的）的下标。
 
 
 代码：
