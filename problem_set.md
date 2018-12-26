@@ -2008,6 +2008,98 @@ public int maxSubArray(int[] A) {
 
 ##  Dynamic Programming 动态规划
 
+
+### 523. Continuous Subarray Sum
+
+Given a list of non-negative numbers and a target integer k, write a function to check if the array has a continuous subarray of size at least 2 that sums up to the multiple of k, that is, sums up to n*k where n is also an integer.
+
+```
+Example 1:
+
+Input: [23, 2, 4, 6, 7],  k=6
+Output: True
+Explanation: Because [2, 4] is a continuous subarray of size 2 and sums up to 6.
+
+
+Example 2:
+
+Input: [23, 2, 6, 4, 7],  k=6
+Output: True
+Explanation: Because [23, 2, 6, 4, 7] is an continuous subarray of size 5 and sums up to 42.
+
+```
+Note:
+
+1.The length of the array won't exceed 10,000.
+
+2.You may assume the sum of all the numbers is in the range of a signed 32-bit integer.
+
+
+思路：这道题在LeetCode里面，归在动态规划这一类下面的，但是怎么也没想到用动态规划来解，刚开始想的是设dp[n]代表前n个元素是否满足条件，但是行不通，逻辑上也有点硬伤，本来就是找到一个满足条件的就可以返回，如果前面就有dp[i]满足了，就可以直接返回，根本不需要一直算到dp[n]。把最开始写的代码贴上来，也算个错误思路对比：
+
+```c++
+class Solution {
+public:
+    bool checkSubarraySum(vector<int>& nums, int k) {
+        int len=nums.size();
+        if(len<2)
+            return false;
+        vector<bool> dp(len+1,false);
+        
+        if(k==0){
+            int count=0;
+            for(int i=0;i<len;i++){
+                if(i==0 && nums[i]==0)
+                    count++;
+                else if(i>0 && nums[i]==0 && nums[i-1]==0)
+                    count++;
+                else
+                    count=0;   
+            }
+            if(count>=2)
+                return true;
+            else
+                return false;
+        }
+        
+        
+        for(int i=1;i<=len;i++){
+            int sum=0;
+            for(int j=0;j<i;j++){
+                sum+=nums[j];
+                dp[i]= ((sum % k)==0)  || (nums[j]%k==0) ;   
+                if(dp[i]==true)
+                    return true;
+            }
+        }
+        return dp[len];
+    }
+};
+```
+下面是别人的思路，可以通过的。
+
+遇到除法问题，我们肯定不能忘了除数为0的情况等处理。还有就是我们如何能快速的遍历所有的子数组，并且求和，我们肯定不能完全的暴力破解，这样OJ肯定不答应。我们需要适当的优化，如果是刷题老司机的话，遇到这种求子数组或者子矩阵之和的题，应该不难想到要建立累加和数组或者累加和矩阵来做。没错，这道题也得这么做，我们要遍历所有的子数组，然后利用累加和来快速求和。在得到每个子数组之和时，我们先和k比较，如果相同直接返回true，否则再判断，若k不为0，且sum能整除k，同样返回true，最后遍历结束返回false，参见代码如下：
+
+代码：
+```c++
+class Solution {
+public:
+    bool checkSubarraySum(vector<int>& nums, int k) {
+        for (int i = 0; i < nums.size(); ++i) {
+            int sum = nums[i];
+            for (int j = i + 1; j < nums.size(); ++j) {
+                sum += nums[j];
+                if (sum == k) return true;
+                if (k != 0 && sum % k == 0) return true;
+            }
+        }
+        return false;
+    }
+};
+```
+可以看到，上面的代码其实就是暴力来解的。用动态规划，一时间还真没有特别好的办法。
+
+
 ### 343. Integer Break
 
 Given a positive integer n, break it into the sum of at least two positive integers and maximize the product of those integers. Return the maximum product you can get.
@@ -2028,7 +2120,7 @@ Explanation: 10 = 3 + 3 + 4, 3 × 3 × 4 = 36.
 Note: You may assume that n is not less than 2 and not larger than 58.
 
 思路：
-对于n来说，它可以被拆分为 n1和n2的和，而 n1和n2又可以被拆分为其他的和，最小一定是止于 n = 1,n = 2, n = 3这三者之中。
+对于n来说，它可以被拆分为 n1和n2的和，而 n1和n2又可以被拆分为其他的和，最小一定是止于 n = 1,n = 2, n = 3这三者之中。得好好分析一下思路，不是很明确，下面这个解法感觉是暴力解出来的。
 
 时间复杂度为O(n2)
 
@@ -2057,6 +2149,7 @@ public:
         for(int i=3;i<=n;i++){
             
             for(int j=1;j<=i-1;j++){
+                //很暴力的方法
                 dp[i]=max(dp[i-j] * dp[j], (i-j) *j,dp[i-j] * j,(i-j)*dp[j],dp[i]);
             }
         }
