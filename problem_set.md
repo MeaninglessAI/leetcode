@@ -2984,6 +2984,184 @@ public:
 
 ## 6.linked list
 
+
+### 5. 3Sum
+
+Given an array nums of n integers, are there elements a, b, c in nums such that a + b + c = 0? Find all unique triplets in the array which gives the sum of zero.
+
+Note:
+
+The solution set must not contain duplicate triplets.
+
+Example:
+
+```
+Given array nums = [-1, 0, 1, 2, -1, -4],
+
+A solution set is:
+[
+  [-1, 0, 1],
+  [-1, -1, 2]
+]
+```
+知识点：1.双指针 真的管用
+
+
+思路：
+
+
+附：这道题做的过程真的是多灾多难，断断续续三天才解决，还是在看了别人的答案后才意识到问题所在。下面将不断迭代中间的不能通过的版本，以示惊醒。
+
+
+1. 内存限制
+```c++
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int len=nums.size();
+        vector<vector<int>> res;
+
+        if(len<3 )
+            return res;
+        
+        sort(nums.begin(),nums.end());
+        
+        for(int i=0;i<len-2;i++){
+            vector<int> temp;
+            int left=i+1;
+            int right=len-1;
+            if(nums[i]>0 || nums[right]<0)
+                break;
+
+            while(left<right){//这个判断条件很重要
+                vector <int> temp;
+                if(nums[i]+nums[left]+nums[right]==0){
+                    temp.push_back(nums[i]);
+                    temp.push_back(nums[left]);
+                    temp.push_back(nums[right]);
+                    res.push_back(temp);
+                   
+                }else if(nums[i]+nums[left]+nums[right]>0){
+                    right--;
+                }else
+                    left++;
+            }
+            
+        }
+
+        if(temp.size()!=0)
+            res.push_back(temp);
+        
+        return res;      
+    }
+};
+```
+提交答案，显示一直内存问题，一直还在想是不是程序空间复杂度太高了，但一想这里面又没多大的数据，就几个数据就显示内存限制问题，当时就很想不通。然后基本就卡在这里了。后面看了别人的答案才知道问题所在。
+
+问题出在：
+```c++
+while(left<right){//这个判断条件很重要
+    vector <int> temp;
+    if(nums[i]+nums[left]+nums[right]==0){
+        temp.push_back(nums[i]);
+        temp.push_back(nums[left]);
+        temp.push_back(nums[right]);
+        res.push_back(temp);
+        //问题就在这里           
+        }else if(nums[i]+nums[left]+nums[right]>0){
+            right--;
+        }else
+            left++;
+        }
+}
+```
+
+
+当遇到满足条件的三元组后，没更新left和right的值，就造成了下次循环还是出现这里，会继续往temp里面添加相同的三元组，然后无限循环下去，这样肯定会出现内存问题。所以后面要添加right--和left++的操作，因为这个三元组已经被用了。该进行下一个判断了。但是自己怎么也没想到这个细节问题。很多时候都是这样，宏观上思路已经知道了，但是总是在细节上出问题，根本原因在于没有把整个过程真正地在大脑中过一遍。如果把细节仔细想过一遍，就知道这么写了。
+
+2.结果不对
+
+解决了上面的问题后，至少程序能看到结果了，但是又出现了结果一直为空的问题，也找了很久的原因才发现。后来改了一个判断条件，变成下面这个样子。
+```c++
+  vector<vector<int>> threeSum(vector<int>& nums) {
+        int len=nums.size();
+        vector<vector<int>> res;
+        
+        if(len<3 || nums.back()<0 || nums.front()>0)
+            return res;
+
+        sort(nums.begin(),nums.end());
+    }
+```
+上面的if就是判断哪些明显不满足条件的时候，然后返回。但是问题就出在sort和if这个代码的顺序上，基本和上面那个错误模式一样，宏观思路想清楚了，但细节上出问题了。都还没排序，就开始判断第一个和最后一个的情况，肯定会出问题（虽然脑子里想的是排序完再判断）。
+
+3、逻辑错误
+
+上面这个改了之后，结果依然不对，比如nums =[-1, 0, 1, 2, -1, -4],这个输入进去，输出应该是：[ [-1, 0, 1], [-1, -1, 2] ],但是你的结果是[[-1, 0, 1,-1, -1, 2]]。
+
+问题在于，你只考虑了一趟循环中，只有一个三元组满足条件。
+
+```c++
+while(left<right){//这个判断条件很重要
+    vector <int> temp;
+    if(nums[i]+nums[left]+nums[right]==0){
+        temp.push_back(nums[i]);
+        temp.push_back(nums[left]);
+        temp.push_back(nums[right]);
+        res.push_back(temp);
+        right--;
+        left++;
+        }else if(nums[i]+nums[left]+nums[right]>0){
+            right--;
+        }else
+            left++;
+        }
+}
+```
+
+
+正确代码应该是：
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int len=nums.size();
+        vector<vector<int>> res;
+        sort(nums.begin(),nums.end());
+        if(len<3 || nums.back()<0 || nums.front()>0)
+            return res;
+        for(int i=0;i<len-2;i++){
+            int left=i+1;
+            int right=len-1;
+            if(nums[i]>0) break;
+            if (i > 0 && nums[i] == nums[i - 1]) continue;
+            while(left<right){//这个判断条件很重要
+                vector <int> temp;
+                if(nums[i]+nums[left]+nums[right]==0){
+                    temp.push_back(nums[i]);
+                    temp.push_back(nums[left]);
+                    temp.push_back(nums[right]);
+                    res.push_back(temp);
+                    while (left<right && nums[left] == nums[left + 1]) ++left;
+                    while (left<right && nums[right] == nums[right - 1]) --right;
+                    left++;
+                    right--;
+                }else if(nums[i]+nums[left]+nums[right]>0){
+                    right--;
+                }else
+                    left++;
+            }
+            
+        }
+        return res;      
+    }
+};
+```
+
+
+
+
 ### 16. 3Sum Closest
 
 Given an array nums of n integers and an integer target, find three integers in nums such that the sum is closest to target. Return the sum of the three integers. You may assume that each input would have exactly one solution.
