@@ -3492,7 +3492,145 @@ public:
 
 ## unclear 
 
-456. 132 Pattern
+
+
+### 441. Arranging Coins
+
+You have a total of n coins that you want to form in a staircase shape, where every k-th row must have exactly k coins.
+
+Given n, find the total number of full staircase rows that can be formed.
+
+n is a non-negative integer and fits within the range of a 32-bit signed integer.
+
+
+Example 1:
+
+```c++
+n = 5
+
+The coins can form the following rows:
+¤
+¤ ¤
+¤ ¤
+
+Because the 3rd row is incomplete, we return 2.
+```
+
+Example 2:
+
+```c++
+n = 8
+
+The coins can form the following rows:
+¤
+¤ ¤
+¤ ¤ ¤
+¤ ¤
+
+Because the 4th row is incomplete, we return 3.
+```
+
+
+
+思路一：
+
+一看就是等差数列，那就挨个从i=1开始算，i+i*i与2n的大小关系，如果刚好相等就返回i，如果i+i*i>2n，就返回i-1。如果小于，就i++
+
+代码:
+```c++
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        int res=0;
+        for(int i=1;;i++){
+            if(i+i*i==2*n){
+                res=i;
+                break;
+            }
+            if(i+i*i>2*n){
+                res=i-1;
+                break;
+             }
+        }
+        return res;
+    }
+};
+```
+
+但上面这样写的代码，通不过测试。比如会出现下面的情况：
+```
+Your input : 1804289383
+Output : 0
+Expected :60070
+```
+
+思路二：
+
+这个就不会出错，上面的代码估计是溢出了，这个就不会，用n减去i行，还剩多少可以用，如果剩下的i+1不够用，就返回i。简洁，而且不会溢出。
+
+复杂度为：O(n)
+
+代码：
+```c++
+class Solution {
+public:
+    int arrangeCoins(int n) {
+       int res=0;
+       for(int i=0;;i++){
+            n=n-i;
+            if(n<i+1)
+                return i;
+        }
+    }
+};
+```
+
+思路三：
+
+
+再来看一种O(lgn)的方法，用到了二分搜索法，我们搜索前i行之和刚好大于n的临界点，这样我们减一个就是能排满的行数，注意我们计算前i行之和有可能会整型溢出，所以我们需要将变量都定义成长整型，参见代码如下：
+
+复杂度：O(lgn)
+
+
+代码：
+
+```c++
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        if (n <= 1) return n;
+        long low = 1, high = n;
+        while (low < high) {
+            long mid = low + (high - low) / 2;
+            if (mid * (mid + 1) / 2 <= n) low = mid + 1;
+            else high = mid;
+        }
+        return low - 1;
+    }
+};
+```
+
+思路四：
+
+充分利用了等差数列的性质，我们建立等式, n = (1 + x) * x / 2, 我们用一元二次方程的求根公式可以得到 x = (-1 + sqrt(8 * n + 1)) / 2, 然后取整后就是能填满的行数。
+
+复杂度：O(1)
+
+代码:
+
+```c++
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        return (int)((-1 + sqrt(1 + 8 * (long)n)) / 2);
+    }
+};
+```
+
+
+
+### 456. 132 Pattern
 
 Given a sequence of n integers a1, a2, ..., an, a 132 pattern is a subsequence ai, aj, ak such that i < j < k and ai < ak < aj. Design an algorithm that takes a list of n numbers as input and checks whether there is a 132 pattern in the list.
 
