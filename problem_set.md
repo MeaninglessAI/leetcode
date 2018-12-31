@@ -882,6 +882,8 @@ public:
 
 ### 122.Best Time to Buy and Sell Stock II 
 
+
+
 ## 3.DFS 
 
 
@@ -2005,6 +2007,181 @@ public int maxSubArray(int[] A) {
 
 
 ## Binary Search
+
+### 367. Valid Perfect Square
+
+Given a positive integer num, write a function which returns True if num is a perfect square else False.
+
+Note: Do not use any built-in library function such as sqrt.
+
+Example 1:
+```
+Input: 16
+Output: true
+```
+
+Example 2:
+
+```
+Input: 14
+Output: false
+```
+
+思路一：
+
+最直接的思路是暴力搜索，从1开始，依次试，但很显然这样是会超时的，不然不会考你的。
+
+可以用二分搜索，因为这个题内在性质是单调递增的，之所以能二分就是因为这个，因为不害怕错过一些可能正确的解。好好体会这种思想，凡是符合这种单调变化的情况，都可以考虑能不能用二分搜索。
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+
+        if(num==0)
+            return false;
+        long left=0;
+        long right=num;
+        while(left<=right){
+            long mid=(left+right)/2;
+            if(mid * mid >num)
+                right=mid-1;
+            else if(mid * mid<num)
+                left=mid+1;
+            else
+                return true;
+        }
+        
+        return false;
+        
+        
+    }
+};
+```
+
+但是上面这个方法把long改为int在LeetCode上是会超时的，不知道为什么。
+
+
+思路二：
+
+比如一个数字49，我们先对其除以2，得到24，发现24的平方大于49，那么再对24除以2，得到12，发现12的平方还是大于49，再对12除以2，得到6，发现6的平方小于49，于是遍历6到12中的所有数，看有没有平方等于49的，有就返回true，没有就返回false。
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        if (num == 1) return true;
+        long x = num / 2, t = x * x;
+        while (t > num) {
+            x /= 2;
+            t = x * x;
+        }
+        for (int i = x; i <= 2 * x; ++i) {
+            if (i * i == num) return true;
+        }
+        return false;
+    }
+};
+```
+
+思路三：
+
+下面这种方法也比较高效，从1搜索到sqrt(num)，看有没有平方正好等于num的数：
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        for (int i = 1; i <= num / i; ++i) {
+            if (i * i == num) return true;
+        }
+        return false;
+    }
+};
+```
+
+思路四：
+
+下面这种方法就是纯数学解法了，利用到了这样一条性质，完全平方数是一系列奇数之和，例如：
+
+```c++
+1 = 1
+4 = 1 + 3
+9 = 1 + 3 + 5
+16 = 1 + 3 + 5 + 7
+25 = 1 + 3 + 5 + 7 + 9
+36 = 1 + 3 + 5 + 7 + 9 + 11
+....
+1+3+...+(2n-1) = (2n-1 + 1)n/2 = n*n
+```
+
+时间复杂度为O(sqrt(n))
+
+代码：
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        int i = 1;
+        while (num > 0) {
+            num -= i;
+            i += 2;
+        }
+        return num == 0;
+    }
+};
+```
+
+思路五：下面这种方法是第一种方法的类似方法，更加精简了，时间复杂度为O(lgn)：
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        long x = num;
+        while (x * x > num) {
+            x = (x + num / x) / 2;
+        }
+        return x * x == num;
+    }
+};
+```
+
+思路六：
+
+O(1)的解法
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        if (num < 0) return false;
+        int root = floorSqrt(num);
+        return root * root == num;
+    }
+
+    int32_t floorSqrt(int32_t x) {
+        double y=x; int64_t i=0x5fe6eb50c7b537a9;
+        y = *(double*)&(i = i-(*(int64_t*)&y)/2);
+        y = y * (3 - x * y * y) * 0.5;
+        y = y * (3 - x * y * y) * 0.5;
+        i = x * y + 1; return i - (i * i > x);
+    }
+};
+```
+
+
+
 
 ### 704. Binary Search
 
