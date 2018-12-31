@@ -2004,6 +2004,96 @@ public int maxSubArray(int[] A) {
 ```
 
 
+## Binary Search
+
+### 704. Binary Search
+
+
+Given a sorted (in ascending order) integer array nums of n elements and a target value, write a function to search target in nums. If target exists, then return its index, otherwise return -1.
+
+Example 1:
+
+```
+Input: nums = [-1,0,3,5,9,12], target = 9
+Output: 4
+Explanation: 9 exists in nums and its index is 4
+```
+Example 2:
+
+```
+Input: nums = [-1,0,3,5,9,12], target = 9
+Output: 4
+Explanation: 9 exists in nums and its index is 4
+```
+
+思路：
+
+正常的写法
+
+注意while判断条件要是left<=right而不是left<right.
+
+
+代码：
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int len=nums.size();
+        int left=0;
+        int right=len-1;
+        while(left<=right){
+            int mid=(left+right)/2;
+            if(nums[mid]==target)
+                return mid;
+            else if(nums[mid]<target)
+                left=mid+1;
+            else
+                right=mid-1;  
+        }
+        return -1;
+    }
+};
+```
+
+这样写是可以通过测试的，但是有一个潜在的溢出bug，一般情况下不会出现。
+
+int mid = (left + right)/2;
+
+正确为：
+
+int mid = left + (right  - left)/2;
+
+在数学上这两个表达式结果是一样的，但在计算机中，算出来的结果可能不同。当left和right非常大的时候，两个相加会造成溢出。
+
+下面是递归的方法来做：
+
+递归写法：
+```java
+class Solution {
+    public int search(int[] nums, int target) {
+        return binarySearch(nums, target, 0, nums.length - 1);
+    }
+    public int binarySearch(int[] nums, int target, int left, int right) {
+        if (left > right) return -1;
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            return binarySearch(nums, target, mid + 1, right);
+        } else {
+            return binarySearch(nums, target, left, mid - 1);
+        }   
+    }
+}
+```
+
+注意学习如何将递归转化为循环的形式，这个例子很简单，复杂的也要会。
+
+
+
+
+
+
 
 
 ##  Dynamic Programming 动态规划
