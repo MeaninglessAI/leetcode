@@ -886,6 +886,103 @@ public:
 
 ## 3.DFS Depth-first search
 
+
+### 559. Maximum Depth of N-ary Tree
+
+Given a n-ary tree, find its maximum depth.
+
+The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.
+
+For example, given a 3-ary tree:
+
+![](img/narytreeexample.png)
+
+We should return its max depth, which is 3.
+
+Note:
+* The depth of the tree is at most 1000.
+* The total number of nodes is at most 5000
+
+
+思路一：
+
+DFS，遍历一个节点所有子节点，要注意一下maxpath是怎么算的，是算路径数还是节点数。这个决定了边界的返回值
+
+代码：
+```c++
+class Solution {
+public:
+    int maxDepth(Node* root) {
+        if(!root)
+            return 0;
+        vector<Node*> temp=root->children;
+        int len=temp.size();
+        int res=0;
+        if(len==0)
+            return 1;
+        for(int i=0;i<len;i++){
+           int res=max(res,maxDepth(temp[i]));
+        }
+        return 1+res;
+        
+    }
+};
+```
+
+上面这个代码，刚开始怎么看都没错，逻辑好像是对的啊？但就是怎么提交都是错误答案，最后才发现，循环语句里面的res又被重新定义了一次，当然不对了。唉，细节一定得注意，在这里浪费了很多时间。把res前面的“int”去掉就对了。
+
+思路二：
+
+首先来看一种常见的递归解法，就是需要有一个当前深度，然后带一个全局变量res进去。在递归函数中，如果node为空，直接返回。若子结点数组为空，那么结果res和cur比较取较大值。否则就遍历子结点数组，对每个子结点调用递归函数，这里的cur要自增1，参见代码如下：
+
+代码：
+```c++
+class Solution {
+public:
+    int maxDepth(Node* root) {
+        int res = 0;
+        helper(root, 1, res);
+        return res;
+    }
+    void helper(Node* node, int cur, int& res) {
+        if (!node) return;
+        if (node->children.empty()) res = max(res, cur);
+        for (Node* child : node->children) {
+            helper(child, cur + 1, res);
+        }
+    }
+};
+```
+
+思路三：
+
+我们也可以不使用递归，而是用迭代的形式，这里借助队列queue来做，就是BFS的经典写法，不算难，参见代码如下：
+
+代码：
+
+```c++
+class Solution {
+public:
+    int maxDepth(Node* root) {
+        if (!root) return 0;
+        int res = 0;
+        queue<Node*> q{{root}};
+        while (!q.empty()) {
+            for (int i = q.size(); i > 0; --i) {
+                auto t = q.front(); q.pop();
+                for (auto child : t->children) {
+                    if (child) q.push(child);
+                }
+            }
+            ++res;
+        }
+        return res;
+    }
+};
+```
+
+
+
 ### 576. Out of Boundary Paths
 
 There is an m by n grid with a ball. Given the start coordinate (i,j) of the ball, you can move the ball to adjacent cell or cross the grid boundary in four directions (up, down, left, right). However, you can at most move N times. Find out the number of paths to move the ball out of grid boundary. The answer may be very large, return it after mod 109 + 7.
