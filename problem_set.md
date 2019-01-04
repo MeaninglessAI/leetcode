@@ -886,6 +886,138 @@ public:
 
 ## 3.DFS Depth-first search
 
+### 576. Out of Boundary Paths
+
+There is an m by n grid with a ball. Given the start coordinate (i,j) of the ball, you can move the ball to adjacent cell or cross the grid boundary in four directions (up, down, left, right). However, you can at most move N times. Find out the number of paths to move the ball out of grid boundary. The answer may be very large, return it after mod 109 + 7.
+
+Example 1:
+
+Example 2:
+
+思路：
+
+因为这个题是归类在DFS下的，所以一开始就想的使用DFS来求解，也的确是可以的，思路先简单。
+处在（i,j）位置的球，下一步一共用四个方向可以走，然后判断在规定的次数内，能不能走到边界外面即可。递归的思想来遍历所有情况。
+
+小球可以移动的这四个方向就相当于是图的某个节点的所有相邻节点，图中需要依次访问所有相邻的节点，这里把循环手动展开了（如下是访问图的伪代码）。
+
+```c++
+for(int w=G->first(v);w<G->n();w=G->next(v,w)){
+        if(G->getMark(w)==UNVISITED){
+            DFS(G,w);
+        }
+    }
+```
+
+代码：
+```c++
+class Solution {
+public:
+    int findPaths(int m, int n, int N, int i, int j) {
+    
+        return dfs(m,n,N,1,i-1,j)+dfs(m,n,N,1,i+1,j)+dfs(m,n,N,1,i,j-1)+dfs(m,n,N,1,i,j+1);
+    
+        
+    }
+    
+    int dfs(int m,int n,int N,int num,int i, int j){
+        if(  (i<0 || i>=m || j<0 || j>=n) && num<=N) 
+            return 1;
+        else if(!(i<0 || i>=m || j<0 || j>=n) && num<N)
+            return dfs(m,n,N,num+1,i-1,j)+dfs(m,n,N,num+1,i+1,j)+dfs(m,n,N,num+1,i,j-1)+dfs(m,n,N,num+1,i,j+1) ;
+        else
+            return 0;
+    }
+};
+```
+
+上面这个代码测试情况为：“76/94 test cases passed.”
+没完全通过的原因是超时了（代码逻辑是正确的）。因为用的是递归，所有就得改用DP的形式来解决。
+
+
+思路二：
+
+完全DP来解决
+
+我们使用一个三维的DP数组，其中dp[k][i][j]表示总共走k步，从(i,j)位置走出边界的总路径数。那么我们来找递推式，对于dp[k][i][j]，走k步出边界的总路径数等于其周围四个位置的走k-1步出边界的总路径数之和，如果周围某个位置已经出边界了，那么就直接加上1，否则就在dp数组中找出该值，这样整个更新下来，我们就能得出每一个位置走任意步数的出界路径数了，最后只要返回dp[N][i][j]就是所求结果了，参见代码如下：
+
+代码：
+
+```c++
+class Solution {
+public:
+    int findPaths(int m, int n, int N, int i, int j) {
+        vector<vector<vector<int>>> dp(N + 1, vector<vector<int>>(m, vector<int>(n, 0)));
+        for (int k = 1; k <= N; ++k) {
+            for (int x = 0; x < m; ++x) {
+                for (int y = 0; y < n; ++y) {
+                    long long v1 = (x == 0) ? 1 : dp[k - 1][x - 1][y];
+                    long long v2 = (x == m - 1) ? 1 : dp[k - 1][x + 1][y];
+                    long long v3 = (y == 0) ? 1 : dp[k - 1][x][y - 1];
+                    long long v4 = (y == n - 1) ? 1 : dp[k - 1][x][y + 1];
+                    dp[k][x][y] = (v1 + v2 + v3 + v4) % 1000000007;
+                }
+            }
+        } 
+        return dp[N][i][j];
+    }
+};
+```
+
+DP和递归比起来，就是从下往上解决问题的，递归是从上往下。DP更符合计算机的思维，递归更符合人的思维，便于理解，但是也更慢了。
+
+上面这个DP好像没有显示的体现出来判断走的步数和总步数的区别，但是有两个地方其实已经把边界处理好了。
+
+1.初始化的时候，可以看到三维数组的所有元素都被初始化为0，所以当k=1的时候，可以看到下面的边界条件判断是有用的。如果k=1的时候，你还不在格子边缘（有四种情况），那么就不可能走出去，所以不在边缘的值就为为dp[0][i][j]=0，只要k=0，这个dp[k][x][x]都为零。
+
+得益于刚开始声明这个三维数组的初始化，就直接把边界情况初始化统一到了循环中（并不是没初始化边界，我们知道，dp中边界条件的确定是很重要的）。这个要意识到。
+
+另外，从另一个角度看，其实k=1的时候，分别遍历x和y的时候，就相当于初始化了，把边缘的情况都计算出来了。只是没显式地初始化，这些代码细节其实代表了你对DP思想的掌握程度，如果你自己能写出这样的代码，说明你很了解dp在干嘛了。
+
+2.最外层的循环k=1到N这已经就是限制死了k的范围。
+
+
+思路三：
+
+DP+DFS
+
+这种方法虽然也是用的DP解法，但是DP数组的定义和上面的不一样，这种解法相当于使用了BFS搜索，以(i, j)为起始点，其中dp[k][x][y]表示用了k步，进入(x, y)位置的路径数，由于dp[k][x][y]只依赖于dp[k-1][x][y]，所以我们可以用一个二维dp数组来代替，初始化dp[i][j]为1，总共N步，进行N次循环，每次都新建一个mxn大小的临时数组t，然后就是对于遍历到的每个位置，都遍历其四个相邻位置，如果相邻位置越界了，那么我们用当前位置的dp值更新结果res，因为此时dp值的意义就是从(i,j)到越界位置的路径数。如果没有，我们将当前位置的dp值赋给t数组的对应位置，这样在遍历完所有的位置时，将数组t整个赋值给dp，然后进入下一步的循环，参加代码如下：
+
+代码：
+
+```c++
+class Solution {
+public:
+    int findPaths(int m, int n, int N, int i, int j) {
+        int res = 0;
+        vector<vector<int>> dp(m, vector<int>(n, 0));
+        dp[i][j] = 1;
+        vector<vector<int>> dirs{{0,-1},{-1,0},{0,1},{1,0}};
+        for (int k = 0; k < N; ++k) {
+            vector<vector<int>> t(m, vector<int>(n, 0));
+            for (int r = 0; r < m; ++r) {
+                for (int c = 0; c < n; ++c) {
+                    for (auto dir : dirs) {
+                        int x = r + dir[0], y = c + dir[1];
+                        if (x < 0 || x >= m || y < 0 || y >= n) {
+                            res = (res + dp[r][c]) % 1000000007;
+                        } else {
+                            t[x][y] = (t[x][y] + dp[r][c]) % 1000000007;
+                        }
+                    }
+                }
+            }
+            dp = t;
+        } 
+        return res;
+    }
+};
+```
+
+
+
+
+
 ### 98. Validate Binary Search Tree
 
 Given a binary tree, determine if it is a valid binary search tree (BST).
