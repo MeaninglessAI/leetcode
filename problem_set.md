@@ -886,6 +886,65 @@ public:
 
 ## 3.DFS Depth-first search
 
+### 872. Leaf-Similar Trees
+
+Consider all the leaves of a binary tree.  From left to right order, the values of those leaves form a leaf value sequence.
+
+![](img/tree.png)
+
+For example, in the given tree above, the leaf value sequence is (6, 7, 4, 9, 8).
+
+Two binary trees are considered leaf-similar if their leaf value sequence is the same.
+
+Return true if and only if the two given trees with head nodes root1 and root2 are leaf-similar.
+
+
+思路一：
+
+DFS，很简单的思考
+
+
+代码：
+```c++
+class Solution {
+public:
+    bool leafSimilar(TreeNode* root1, TreeNode* root2) {
+        vector<int> v1;
+        vector<int> v2;
+        getLeaf(root1,v1);
+        getLeaf(root2,v2);
+        int len1=v1.size();
+        int len2=v2.size();
+        if(len1!=len2)
+            return false;
+        else{
+            for(int i=0;i<len1;i++)
+                if(v1[i]!=v2[i])
+                    return false;
+        }
+        return true;
+    }
+    
+    void getLeaf(TreeNode* root,vector<int>& v){
+        if(!root)
+            return ;
+        if(root->left==NULL && root->right==NULL){
+            v.push_back(root->val);
+            return ;
+        }
+        getLeaf(root->left,v);//注意要先访问左边，保证先把左边元素放进去
+        getLeaf(root->right,v);
+    }
+};
+```
+
+
+
+
+
+
+
+
 
 ### 559. Maximum Depth of N-ary Tree
 
