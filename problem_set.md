@@ -943,9 +943,6 @@ public:
 
 
 
-
-
-
 ### 559. Maximum Depth of N-ary Tree
 
 Given a n-ary tree, find its maximum depth.
@@ -4276,6 +4273,80 @@ public:
     }
 };
 ```
+
+## 7.string
+
+### 125. Valid Palindrome
+
+Given a string, determine if it is a palindrome, considering only alphanumeric characters and ignoring cases.
+
+Note: For the purpose of this problem, we define empty string as valid palindrome.
+
+Example 1:
+
+```
+Input: "A man, a plan, a canal: Panama"
+Output: true
+```
+Example 2:
+
+```Input: "race a car"
+Output: false
+```
+
+
+思路：栈
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(string s) {
+        string str="";
+        int len=s.size();
+        if(len==0 )
+            return true;
+        for(int i=0;i<len;i++){
+             if( ( ('A'<=s[i] && s[i]<='Z')|| ('a'<=s[i] && s[i]<='z')) || (48<=s[i] && s[i]<=57) )
+                str+=s[i];
+        }
+        len=str.size();
+        if(len==0 )
+            return true;
+        transform(str.begin(),str.end(),str.begin(),::tolower);
+        stack<char> st;
+        if(len%2==0){
+            for(int i=0;i<len/2;i++)
+                st.push(str[i]);
+            for(int i=len/2;i<len;i++){
+                if(st.top()!=str[i])
+                    return false;
+                st.pop();
+            }
+            return true;
+        }
+        
+        if(len%2==1){
+            for(int i=0;i<len/2;i++)
+                st.push(str[i]);
+            for(int i=(len/2)+1;i<len;i++){
+                if(st.top()!=str[i])
+                    return false;
+                st.pop();
+            }
+            return true;
+        }   
+    }
+};
+```
+
+注意几个细节，有时候一直发现不了，很搞人
+
+1.a<=b<=c这种连续判断是无效的，必须分开写
+2.'A'到'z'，中间并不是一直都是字母，还有其他符号，要大写归大写判断，小写归小写判断。
+
+
 
 ## unclear 
 
