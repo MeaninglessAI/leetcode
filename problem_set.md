@@ -4295,7 +4295,7 @@ Output: false
 ```
 
 
-思路：栈
+思路一：栈
 
 代码：
 
@@ -4345,6 +4345,42 @@ public:
 
 1.a<=b<=c这种连续判断是无效的，必须分开写
 2.'A'到'z'，中间并不是一直都是字母，还有其他符号，要大写归大写判断，小写归小写判断。
+
+思路二：
+
+建立两个指针，left和right, 分别从字符的开头和结尾处开始遍历整个字符串，如果遇到非字母数字的字符就跳过，继续往下找，直到找到下一个字母数字或者结束遍历，如果遇到大写字母，就将其转为小写。等左右指针都找到字母数字时，比较这两个字符，若相等，则继续比较下面两个分别找到的字母数字，若不相等，直接返回false. 
+
+知识点：两个指针这个方法很常用，可以部分替代栈等数据结构，同理，其他地方也可以借鉴这种双指针的思想。
+
+时间复杂度为O(n), 代码如下：
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool isPalindrome(string s) {
+        int left = 0, right = s.size() - 1 ;
+        while (left < right) {
+            if (!isAlphaNum(s[left])) ++left;
+            else if (!isAlphaNum(s[right])) --right;
+            else if ((s[left] + 32 - 'a') %32 != (s[right] + 32 - 'a') % 32) return false;
+            else {
+                ++left; --right;
+            }
+        }
+        return true;
+    }
+    bool isAlphaNum(char &ch) {
+        if (ch >= 'a' && ch <= 'z') return true;
+        if (ch >= 'A' && ch <= 'Z') return true;
+        if (ch >= '0' && ch <= '9') return true;
+        return false;
+    }
+};
+```
+
+
 
 
 
