@@ -4383,9 +4383,75 @@ public:
 
 
 
-
 ## unclear 
 
+### 593. Valid Square
+
+Given the coordinates of four points in 2D space, return whether the four points could construct a square.
+
+The coordinate (x,y) of a point is represented by an integer array with two integers.
+
+Example:
+
+```
+Input: p1 = [0,0], p2 = [1,1], p3 = [1,0], p4 = [0,1]
+Output: True
+```
+
+Note:
+
+* 1.All the input integers are in the range [-10000, 10000].
+
+* 2.A valid square has four equal sides with positive length and four equal angles (90-degree angles).
+
+* 3.Input points have no order.
+
+思路：
+
+判断是否为正方形，一个直观的思路就是，一个有直角的菱形就是正方形，判断菱形的条件好满足，直接计算四条边长度就可以。直角如何体现在代码上呢？就可以用两边的平方和为对角线的平方来判断了。
+
+所以就是任意计算四个点的距离，如果是正方形，最后的6个边长的条件一定是四条边相等，后两条边相等，且等于前面的两条边相加。排序即可实现。
+
+其实思路是非常简单的，但也有一点需要的注意的就是，在解题时，要善于用计算机代码来解决问题，找好转化点。比如判断一个多边形是不是正方形其实方法很多，但有些可能就不适合用计算机代码来实现，或者比较麻烦，所以要选好一个角度。
+
+代码：
+```c++
+class Solution {
+public:
+    bool validSquare(vector<int>& p1, vector<int>& p2, vector<int>& p3, vector<int>& p4) {
+        vector<int> v;
+        v.push_back(length(p1,p2));
+        v.push_back(length(p1,p3));
+        v.push_back(length(p1,p4));
+        v.push_back(length(p2,p3));
+        v.push_back(length(p2,p4));
+        v.push_back(length(p3,p4));
+        
+        sort(v.begin(),v.end());
+        int sum=v[0]+v[1]+v[2]+v[3];
+        if(!v[0] || !v[1] || !v[2] || !v[3] || !v[4] || !v[5] )
+            return false;
+        if(sum!=4*v[0] || sum!=4*v[1] || sum!=4*v[2] ||sum!=4*v[3])
+            return false;
+        if(v[4]!=v[5])
+            return false;
+        if(v[0]+v[1]!=v[4])
+            return false;
+        
+        return true;   
+    }
+
+    int length(vector<int>& a, vector<int>& b){
+        int x1=a[0]-b[0];
+        int x2=a[1]-b[1];
+        return x1*x1+x2*x2;
+    }
+};
+```
+
+还有更简单的判断方法，再往细想一下，如果是正方形，则计算出来的六条边只会有两种长度，而只有两种长度的也一定是正方形。
+
+所以这类带有数学性质的题，可以多想一想，也许条件还能更简化。寻找最正交的基底解法，例如上面的代码判断其实就有冗余了。
 
 
 ### 441. Arranging Coins
