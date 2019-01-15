@@ -886,6 +886,205 @@ public:
 
 ## 3.DFS Depth-first search
 
+
+### 79. Word Search
+
+Given a 2D board and a word, find if the word exists in the grid.
+
+
+The word can be constructed from letters of sequentially adjacent cell, where "adjacent" cells are those horizontally or vertically neighboring. The same letter cell may not be used more than once.
+
+
+Example:
+
+```
+board =
+[
+  ['A','B','C','E'],
+  ['S','F','C','S'],
+  ['A','D','E','E']
+]
+
+Given word = "ABCCED", return true.
+Given word = "SEE", return true.
+Given word = "ABCB", return false.
+```
+
+思路：
+
+这道题是典型的深度优先遍历DFS的应用，原二维数组就像是一个迷宫，可以上下左右四个方向行走，我们以二维数组中每一个数都作为起点和给定字符串做匹配。
+
+如果二维数组board的当前字符和目标字符串word对应的字符相等，则对其上下左右四个邻字符分别调用DFS的递归函数，只要有一个返回true，那么就表示可以找到对应的字符串，否则就不能找到。
+
+但是要注意题中条件，每个cell只能访问一次。
+
+下面处理这个限制条件的办法是把遍历过的cell换成任意一个非字母的字符即可，这样即使后面的又访问回来也不影响了，因为已经变了。但是要注意，在每个cell对其四个方向调用完之后，要改回来。因为不改，就永久改变了，对后面其他的遍历有影响。
+
+代码：
+
+```c++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        if (board.empty() || board[0].empty()) 
+            return false;
+        int height=board.size();
+        int width=board[0].size();
+        vector<vector<int>> record; 
+        for(int i=0;i<height;i++){
+            for(int j=0;j<width;j++){
+            
+                if(dfs(board,word,i,j,height,width,0,word.size()))
+                    return true;
+                
+            }
+        }
+        
+        return false;
+    }
+    
+    
+    
+bool dfs(vector<vector<char>>& board,string word,int i,int j,int height,int width,int count,int len){
+        
+        if(i<0 || j<0 || i>=height || j>=width ){
+            if(count!=len)
+                return false;
+            else
+                return true;
+        }
+            
+        if(count==len)
+            return true;
+        
+        if(board[i][j]==word[count]){
+            char c=board[i][j]; //先存起来，后来还要放回去的，不然会报错，这点很重要
+            board[i][j]='*';
+            bool res= dfs(board,word,i+1,j,height,width,count+1,len) || 
+                   dfs(board,word,i-1,j,height,width,count+1,len) ||
+                   dfs(board,word,i,j+1,height,width,count+1,len) || 
+                   dfs(board,word,i,j-1,height,width,count+1,len);
+            
+            board[i][j]=c;
+            return res;
+            
+        }else
+            return false;
+    }
+};
+```
+
+
+思路二：
+
+还有种处理访问一次的方法就是使用一个和原数组等大小的visited数组，是bool型的，用来记录当前位置是否已经被访问过。
+
+代码：
+```c++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        if (board.empty() || board[0].empty()) return false;
+        int m = board.size(), n = board[0].size();
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (search(board, word, 0, i, j, visited)) return true;
+            }
+        }
+        return false;
+    }
+    bool search(vector<vector<char>>& board, string word, int idx, int i, int j, vector<vector<bool>>& visited) {
+        if (idx == word.size()) return true;
+        int m = board.size(), n = board[0].size();
+        if (i < 0 || j < 0 || i >= m || j >= n || visited[i][j] || board[i][j] != word[idx]) return false;
+        visited[i][j] = true;
+        bool res = search(board, word, idx + 1, i - 1, j, visited) 
+                 || search(board, word, idx + 1, i + 1, j, visited)
+                 || search(board, word, idx + 1, i, j - 1, visited)
+                 || search(board, word, idx + 1, i, j + 1, visited);
+        visited[i][j] = false;
+        return res;
+    }
+};
+```
+
+此外，AC不过的代码如下，可以看一下，这种思路很明显处理得没有上面好。而且还是错的。但是你想了很久，没找到错误的地方，也是看了别人的解法才大概知道哪里有问题。
+
+这种思路是先把第一个字母符合条件的位置先标记下来，因为只有第一个符合条件，接下才有可能是对的。然后后面再对标记的位置分别判断。
+
+但是通不过测试。原因可以找找
+
+
+代码：
+```c++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        if (board.empty() || board[0].empty()) 
+            return false;
+        int height=board.size();
+        int width=board[0].size();
+        vector<vector<int>> record; 
+        for(int i=0;i<height;i++){
+            for(int j=0;j<width;j++){
+                if(board[i][j]=word[0]){
+                    vector<int> temp;
+                    temp.push_back(i);
+                    temp.push_back(j);
+                    record.push_back(temp);
+                }
+                
+            }
+        }
+        
+        if(record.size()==0)
+            return false;
+        int len=record.size();
+        vector<bool> flag(len);//存储每个可能标记点的结果
+        bool res=false;
+        for(int i=0;i<len;i++){
+            flag[i]=dfs(board,word,record[i][0],record[i][1],height,width,0,word.size());
+            res=res || flag[i];
+            if(res)//只要有一个为真就可以了
+                return res;
+        }
+        
+        return res;
+        
+     
+    }
+    
+    
+    
+    bool dfs(vector<vector<char>>& board,string word,int i,int j,int height,int width,int count,int len){
+        
+        if(i<0 || j<0 || i>=height || j>=width ){
+            if(count!=len)//count代表目前到了字符串的那个位置了。如果已经出界了，但是字符串还没访问完，就说明不可能匹配了。
+                return false;
+            else
+                return true;
+        }
+            
+        if(count==len)
+            return true;
+        
+        if(board[i][j]==word[count]){
+            
+            board[i][j]='*'; //从每一个cell调用完后，不改回来的话，就会出现，以下一个cell为起点的时候，数组的元素已经变了
+            
+            return dfs(board,word,i+1,j,height,width,count+1,len) || 
+                   dfs(board,word,i-1,j,height,width,count+1,len) ||
+                   dfs(board,word,i,j+1,height,width,count+1,len) || 
+                   dfs(board,word,i,j-1,height,width,count+1,len);
+        }else
+            return false;
+    }
+};
+```
+
+
+
 ### 872. Leaf-Similar Trees
 
 Consider all the leaves of a binary tree.  From left to right order, the values of those leaves form a leaf value sequence.
